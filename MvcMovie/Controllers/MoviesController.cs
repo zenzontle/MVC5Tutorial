@@ -15,9 +15,31 @@ namespace MvcMovie.Controllers
         private MovieDBContext db = new MovieDBContext();
 
         // GET: /Movies/
-        public ActionResult Index()
+        public ActionResult Index(string movieGenre, string searchString)
         {
-            return View(db.Movies.ToList());
+            var genreList = new List<string>();
+
+            var genreQuery = from d in db.Movies
+                             orderby d.Genre
+                             select d.Genre;
+
+            genreList.AddRange(genreQuery.Distinct());
+            ViewBag.movieGenre = new SelectList(genreList);
+
+            var movies = from m in db.Movies
+                         select m;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                movies = movies.Where(s => s.Title.Contains(searchString));
+            }
+
+            if (!string.IsNullOrEmpty(movieGenre))
+            {
+                movies = movies.Where(s => s.Genre == movieGenre);
+            }
+
+            return View(movies);
         }
 
         // GET: /Movies/Details/5
